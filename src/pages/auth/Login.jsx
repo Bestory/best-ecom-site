@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import loginImage from "../../assets/login.png";
 import { Link, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
@@ -26,7 +26,7 @@ const initialValues = {
 const Login = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const { loading, success, loggedIn} = useSelector((state) => state.user);
+  const { loading, success,status, passwordOk} = useSelector((state) => state.user);
   const { isKeyLoaded } = useEncryption();
 
   const handleFormSubmit = async (values, { resetForm }) => {
@@ -46,11 +46,14 @@ const Login = () => {
   };
 
   useEffect(() => {
-    if (success && loggedIn) {
-      navigate('/')
+    if (passwordOk) {
+      navigate('/mfaemailstepup')
     }
-    dispatch(RESET_USER())
-  }, [success, dispatch, navigate,loggedIn]);
+    if (status == "0") { // Not activate
+      navigate('/resettoken')
+    }
+    dispatch(RESET_USER());
+  }, [success, dispatch, status, navigate, passwordOk]);
   
   return (
     <>

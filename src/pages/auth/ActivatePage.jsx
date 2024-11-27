@@ -12,7 +12,7 @@ import { RESET_USER } from "../../redux/users/userSlice.js";
 
 const ActivatePage = () => {
   const dispatch = useDispatch();
-  const { loading, success } = useSelector((state) => state.user);
+  const { loading, activated,error } = useSelector((state) => state.user);
   const navigate = useNavigate();
   // const [showError, setShowError] = useState(false);
 
@@ -44,11 +44,14 @@ const ActivatePage = () => {
   };
 
   useEffect(() => {
-    if (success) {
+    if (activated) {
       navigate('/login');
     }
+    else if(error){ 
+      navigate('/resettoken');
+    }
     dispatch(RESET_USER());
-  }, [success, dispatch, navigate]);
+  }, [activated, dispatch, navigate,error]);
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-primary">
@@ -65,7 +68,7 @@ const ActivatePage = () => {
           </div>
         )} */}
 
-        {success ? (
+        {activated ? (
           <div className="text-center text-green-600">
             Your account has been activated successfully!
           </div>
@@ -75,7 +78,7 @@ const ActivatePage = () => {
             validationSchema={validationSchema}
             onSubmit={handleActivation}
           >
-            {({ isSubmitting }) => (
+            {({ isSubmitting,isValid,dirty }) => (
               <Form className="space-y-4">
                 <div>
                   <label
@@ -99,10 +102,10 @@ const ActivatePage = () => {
                 </div>
                 <button
                   type="submit"
-                  disabled={loading || isSubmitting}
+                  disabled={loading || isSubmitting || !isValid || !dirty}
                   className={`w-full py-2 px-4 rounded-md text-white font-semibold ${
-                    loading
-                      ? 'bg-indigo-300 cursor-not-allowed'
+                    loading || isSubmitting || !isValid || !dirty
+                      ? 'bg-indigo-400 cursor-not-allowed'
                       : 'bg-indigo-600 hover:bg-indigo-700'
                   }`}
                 >

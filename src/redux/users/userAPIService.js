@@ -36,9 +36,13 @@ const login = async (userData) => {
   } catch (error) {
     // Handle different types of errors
     if (error.response) {
-      // Server responded with a status other than 2xx, throw a custom error message depending on the status
-      throw new Error(error.response.data.message || error.response.statusText || "Login failed");
-    } else if (error.request) {
+      if (error.response.data.status !== 1) {
+        throw new Error(error.response.data.status);
+      } else {
+        // Server responded with a status other than 2xx, throw a custom error message depending on the status
+        throw new Error(error.response.data.message || error.response.statusText || "Login failed");
+      }
+  } else if (error.request) {
       // Request was made but no response was received
       throw new Error("No response from server. Please try again later.");
     } else {
@@ -199,6 +203,84 @@ const activateUser = async (userData) => {
   }
 }
 
+const resetActivationCode = async (userData) => {
+  const API_URL = `${BASE_API_URL}/v1/users/resettoken`
+  try {
+    const response = await axios.post(API_URL, userData , {
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept':'application/json'
+      },
+    });
+    return response.data;
+  } catch (error) {
+    // Handle different types of errors
+    if (error.response) {
+      // Server responded with a status other than 2xx, throw a custom error message depending on the status
+      throw new Error(error.response.data.message || error.response.statusText || 'failed to reset token');
+    } else if (error.request) {
+      // Request was made but no response was received
+      throw new Error("No response from server. Please try again later.");
+    } else {
+      // Something else happened during the request
+      throw new Error("An error occurred. Please try again.");
+    }
+  }
+}
+
+
+const generateOTP = async (userData) => {
+  const API_URL = `${BASE_API_URL}/v1/users/generateotp`;
+  try {
+    const response = await axios.post(API_URL, userData , {
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept':'application/json'
+      },
+    });
+    return response.data;
+  } catch (error) {
+    // Handle different types of errors
+    if (error.response) {
+      // Server responded with a status other than 2xx, throw a custom error message depending on the status
+      throw new Error(error.response.data.message || error.response.statusText || 'failed to reset token');
+    } else if (error.request) {
+      // Request was made but no response was received
+      throw new Error("No response from server. Please try again later.");
+    } else {
+      // Something else happened during the request
+      throw new Error("An error occurred. Please try again.");
+    }
+  }
+}
+
+const verifyOTP = async (userData) => {
+  const API_URL = `${BASE_API_URL}/v1/users/verifyotp`
+  try {
+    const response = await axios.post(API_URL, userData , {
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept':'application/json'
+      },
+    });
+    return response.data;
+  } catch (error) {
+    // Handle different types of errors
+    if (error.response) {
+      // Server responded with a status other than 2xx, throw a custom error message depending on the status
+      throw new Error(error.response.data.message || error.response.statusText || 'failed to reset token');
+    } else if (error.request) {
+      // Request was made but no response was received
+      throw new Error("No response from server. Please try again later.");
+    } else {
+      // Something else happened during the request
+      throw new Error("An error occurred. Please try again.");
+    }
+  }
+}
+
+
+
 const userAPIService = {
   register,
   login,
@@ -207,6 +289,9 @@ const userAPIService = {
   getUser,
   updateUser,
   updatePhoto,
-  activateUser
+  activateUser,
+  resetActivationCode,
+  generateOTP,
+  verifyOTP
 }
 export default userAPIService;

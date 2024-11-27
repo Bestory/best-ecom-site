@@ -15,6 +15,8 @@ import { getLogInStatus } from './redux/users/userSlice';
 import Profile from './pages/profile/profile';
 import Order from './pages/order/order';
 import ActivatePage from './pages/auth/ActivatePage';
+import ResetActivationPage from './pages/auth/ResetActivationPage ';
+import MFAEmailStepUp from './pages/auth/MFAEmailStepUp ';
 
 
 const App = () => {
@@ -36,7 +38,9 @@ const App = () => {
           <Route path='/profile' element={<Profile />} />
           <Route path='/myorder' element={<Order />} />
           <Route path='/' element={<Home />} />
-          <Route path='/activate' element={<ActivatePage/>} />
+          <Route path='/activate' element={<ActivatePage />} />
+          <Route path='/resettoken' element={<ResetActivationPage />} />
+          <Route path='/mfaemailstepup' element={<MFAEmailStepUp />} />
         </Routes>
         <Footer/>
       </BrowserRouter>

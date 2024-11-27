@@ -36,7 +36,7 @@ const initialValuesRegister = {
 const Register = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const { success, loading,registered } = useSelector((state) => state.user);
+  const {loading,registered } = useSelector((state) => state.user);
   const handleFormSubmit = async (values, { resetForm }) => {
      // Encrypt data before sending
     const encryptedData = await encryptionService.encryptData(JSON.stringify(values)); // Assuming encryptData method is available
@@ -51,12 +51,11 @@ const Register = () => {
   };
 
   useEffect(() => {
-    console.log('registered',registered);
     if (registered) {
       navigate('/activate');
     } 
     dispatch(RESET_USER());
-  }, [success, dispatch, navigate,registered]);
+  }, [dispatch, navigate,registered]);
 
   return (
     <>

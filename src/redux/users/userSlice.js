@@ -4,13 +4,19 @@ import { toast } from 'react-toastify';
 
 const initialState = {
   user: null,
+  showUser: false,
   loggedIn: false,
+  passwordOk: false,
+  registered: false,
+  activated: false,
+  activateToken: false,
+  otpSent: false,
   success: false,
   loading: false,
-  registered: false,
   message: "",
-  error: ""
-}
+  status: "",
+  error: "",
+};
 
 //Register user
 export const register = createAsyncThunk("user/register", async (userData,thunkAPI) => { 
@@ -98,7 +104,6 @@ export const updatePhoto = createAsyncThunk("user/updatephoto", async (userData,
   }
 );
 
-//update photo
 export const activateAccount = createAsyncThunk("user/activate", async (userData, thunkAPI) => {
     try {
       const response = await userAPIService.activateUser(userData);// API call
@@ -109,6 +114,38 @@ export const activateAccount = createAsyncThunk("user/activate", async (userData
     }
   }
 );
+
+export const resetActivationCode = createAsyncThunk("user/resettoken", async (userData, thunkAPI) => {
+  try {
+    const response = await userAPIService.resetActivationCode(userData);// API call
+    return response;
+  } catch (error) {
+    const message = error.response?.data?.message || error.response?.data || error.message || error.toString();
+    return thunkAPI.rejectWithValue(message);
+  }
+}
+);
+
+  export const generateOTP = createAsyncThunk("user/generateotp", async (userData, thunkAPI) => {
+    try {
+      const response = await userAPIService.generateOTP(userData);// API call
+      return response;
+    } catch (error) {
+      const message = error.response?.data?.message || error.response?.data || error.message || error.toString();
+      return thunkAPI.rejectWithValue(message);
+    }
+  })
+
+  export const verifyOTP = createAsyncThunk("user/verifyotp", async (userData, thunkAPI) => {
+    try {
+      const response = await userAPIService.verifyOTP(userData);// API call
+      return response;
+    } catch (error) {
+      const message = error.response?.data?.message || error.response?.data || error.message || error.toString();
+      return thunkAPI.rejectWithValue(message);
+    }
+  })
+
 //Redux slice to handle user registration state (consider above register API call)
 const userSlice = createSlice({
   name: "user",
@@ -120,6 +157,15 @@ const userSlice = createSlice({
       state.loading = false;
       state.message = "";
       state.error = "";
+      state.loggedIn = false;
+      state.registered = false;
+      state.activated = false;
+      state.activateToken = false;
+      state.message = "";
+      state.status = "";
+      state.otpSent = false;
+      state.passwordOk = false;
+      state.showUser = false;
     }
   },
   extraReducers: (builder) => { 
@@ -154,9 +200,9 @@ const userSlice = createSlice({
       })
       .addCase(login.fulfilled, (state,action) => { // API call results return  with successful state  
         state.loading = false; // Stop loading when the request succeeds
-        state.success = true;
-        state.loggedIn = true;
         state.user = action.payload;// Set the user data from the response
+        state.passwordOk = true
+        console.log('passwordOk1',state.passwordOk);
         state.error = null; // Clear errors
         toast.success("Logged in successfully");
         state.message = "Logged in successfully"; // Set message
@@ -164,10 +210,16 @@ const userSlice = createSlice({
       .addCase(login.rejected, (state,action) => { //API calls returned with failed state
         state.loading = false;// Stop loading when the request fails
         state.error = action.payload;
+        if (action.payload === "0") {
+          state.status = action.payload
+          state.message = "Account is not activated. Please activate your account.";
+          toast.error("Account is not activated. Please activate your account.");
+        } else { 
+          state.message = action.payload;
+          toast.error(action.payload);
+        }
         state.success = false;
-        state.message = action.payload;
         state.user = null; //Clear prevoius user data
-        toast.error(action.payload);
       })
       
       //logout user
@@ -282,7 +334,7 @@ const userSlice = createSlice({
       })
       .addCase(activateAccount.fulfilled, (state,action) => { // API call results return  with successful state  
         state.loading = false; // Stop loading when the request succeeds
-        state.success = true;
+        state.activated = true;
         state.user = action.payload;
         state.error = null; // Clear errors
         state.message = "Account activated successful"; //Set message
@@ -292,7 +344,64 @@ const userSlice = createSlice({
         state.error = true;
         state.message = action.payload;
         toast.error(action.payload);
-        })
+      })
+    
+    //activate User
+      .addCase(resetActivationCode.pending, (state) => { //Checking for pending state, still no result on API call
+        state.loading = true;
+        state.error = null; //clearing previous errors
+      })
+      .addCase(resetActivationCode.fulfilled, (state,action) => { // API call results return  with successful state  
+        state.loading = false; // Stop loading when the request succeeds
+        state.activateToken = true;
+        state.user = action.payload;
+        state.error = null; // Clear errors
+        toast.success("Activation code has been sent to your email");//Set message
+      })
+      .addCase(resetActivationCode.rejected, (state,action) => { //API calls returned with failed state
+        state.loading = false;// Stop loading when the request fails
+        state.error = true;
+        state.message = action.payload;
+        toast.error(action.payload);
+      })
+    
+      .addCase(generateOTP.pending, (state) => {
+        state.loading = true;
+        state.error = null; //clearing previous errors
+      })
+      .addCase(generateOTP.fulfilled, (state, action) => {
+        state.loading = false; // Stop loading when the request succeeds
+        state.error = null; // Clear errors
+        toast.success(action.payload);
+        state.message = "OTP sent successful"; //Set message
+    })
+      .addCase(generateOTP.rejected, (state,action) => {
+        state.loading = false;// Stop loading when the request fails
+        state.error = true;
+        state.message = action.payload;
+        toast.error(action.payload);
+      })
+    
+    
+    
+    .addCase(verifyOTP.pending, (state) => {
+        state.loading = true;
+        state.error = null; //clearing previous errors
+      })
+      .addCase(verifyOTP.fulfilled, (state, action) => {
+        state.loading = false; // Stop loading when the request succeeds
+        state.loggedIn = true
+        state.showUser = true;
+        state.user = action.payload;
+        state.error = null; // Clear errors
+        state.message = "OTP sent successful"; //Set message
+    })
+      .addCase(verifyOTP.rejected, (state,action) => {
+        state.loading = false;// Stop loading when the request fails
+        state.error = true;
+        state.message = action.payload;
+        toast.error(action.payload);
+      })
   }
 });
 
