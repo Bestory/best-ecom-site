@@ -8,7 +8,7 @@ import { useEffect,useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { RESET_USER } from "../../redux/users/userSlice.js";
 
-const ResetActivationPage = () => {
+const ResetActivation = () => {
   const dispatch = useDispatch();
   const { loading, activateToken } = useSelector((state) => state.user);
   const navigate = useNavigate();
@@ -107,4 +107,4 @@ const ResetActivationPage = () => {
   );
 };
 
-export default ResetActivationPage;
+export default ResetActivation;

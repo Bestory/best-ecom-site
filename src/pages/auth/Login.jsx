@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import loginImage from "../../assets/login.png";
 import { Link, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
@@ -110,7 +110,7 @@ const Login = () => {
                     className='w-4 h-4 text-blue-500 focus:ring-blue-500 border-gray-300 rounded' />
                       <label htmlFor='remember-this' className='ml-2 block text-sm text-blue-500 font-bold'>Remember Me</label>
                 </div>
-                  <Link to='/reset-password' className='text-blue-500 text-sm font-bold hover:text-blue-800'>
+                  <Link to='/passwordreset' className='text-blue-500 text-sm font-bold hover:text-blue-800'>
                     Forget Password?
                   </Link>
               </div>

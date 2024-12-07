@@ -15,6 +15,7 @@ const initialState = {
   loading: false,
   message: "",
   status: "",
+  changePassword: false,
   error: "",
 };
 
@@ -146,6 +147,54 @@ export const resetActivationCode = createAsyncThunk("user/resettoken", async (us
     }
   })
 
+   export const getCaptcha = createAsyncThunk("user/captcha",async (userData,thunkAPI) => {
+       try {
+         const response = await userAPIService.getCaptcha(userData); // API call
+         return response;
+       } catch (error) {
+         const message =
+           error.response?.data?.message ||
+           error.response?.data ||
+           error.message ||
+           error.toString();
+         return thunkAPI.rejectWithValue(message);
+       }
+     }
+);
+
+
+   export const verifyCaptcha = createAsyncThunk("user/verifycaptcha",async (userData, thunkAPI) => {
+       try {
+         const response = await userAPIService.verifyCaptcha(userData); // API call
+         return response;
+       } catch (error) {
+         const message =
+           error.response?.data?.message ||
+           error.response?.data ||
+           error.message ||
+           error.toString();
+         return thunkAPI.rejectWithValue(message);
+       }
+     }
+);
+   
+   export const changePassword = createAsyncThunk(
+     "user/changepassword",
+     async (userData, thunkAPI) => {
+       try {
+         const response = await userAPIService.changePassword(userData); // API call
+         return response;
+       } catch (error) {
+         const message =
+           error.response?.data?.message ||
+           error.response?.data ||
+           error.message ||
+           error.toString();
+         return thunkAPI.rejectWithValue(message);
+       }
+     }
+   );
+
 //Redux slice to handle user registration state (consider above register API call)
 const userSlice = createSlice({
   name: "user",
@@ -166,68 +215,81 @@ const userSlice = createSlice({
       state.otpSent = false;
       state.passwordOk = false;
       state.showUser = false;
+      state.changePassword = false;
     }
   },
   extraReducers: (builder) => { 
     builder
       //Register user
-      .addCase(register.pending, (state) => { //Checking for pending state, still no result on API call
+      .addCase(register.pending, (state) => {
+        //Checking for pending state, still no result on API call
         state.loading = true;
         state.error = null; //clearing previous errors
       })
-      .addCase(register.fulfilled, (state, action) => { // API call results return  with successful state  
+      .addCase(register.fulfilled, (state, action) => {
+        // API call results return  with successful state
         state.loading = false; // Stop loading when the request succeeds
         state.registered = true;
-        state.user = action.payload;// Set the user data from the response
+        state.user = action.payload; // Set the user data from the response
         state.error = null; // Clear errors
         toast.success("Registration successful");
         state.message = "Registration successful"; //Set message
       })
-      .addCase(register.rejected, (state, action) => { //API calls returned with failed state
-        state.loading = false;// Stop loading when the request fails
+      .addCase(register.rejected, (state, action) => {
+        //API calls returned with failed state
+        state.loading = false; // Stop loading when the request fails
         state.error = action.payload;
         state.success = false;
         state.message = action.payload; //Set error message
         state.user = null; //Clear prevoius user data
         toast.error(action.payload);
       })
-    
-    //login user
-      .addCase(login.pending, (state) => { //Checking for pending state, still no result on API call
+
+      //login user
+      .addCase(login.pending, (state) => {
+        //Checking for pending state, still no result on API call
         state.loading = true;
         state.success = false;
         state.error = null; //clearing previous errors
       })
-      .addCase(login.fulfilled, (state,action) => { // API call results return  with successful state  
+      .addCase(login.fulfilled, (state, action) => {
+        // API call results return  with successful state
         state.loading = false; // Stop loading when the request succeeds
-        state.user = action.payload;// Set the user data from the response
-        state.passwordOk = true
-        console.log('passwordOk1',state.passwordOk);
+        state.user = action.payload; // Set the user data from the response
+        state.passwordOk = true;
+        console.log('payload1',action.payload);
         state.error = null; // Clear errors
         toast.success("Logged in successfully");
         state.message = "Logged in successfully"; // Set message
       })
-      .addCase(login.rejected, (state,action) => { //API calls returned with failed state
-        state.loading = false;// Stop loading when the request fails
+      .addCase(login.rejected, (state, action) => {
+        //API calls returned with failed state
+        state.loading = false; // Stop loading when the request fails
         state.error = action.payload;
+        console.log("payload2", action.payload);
         if (action.payload === "0") {
-          state.status = action.payload
-          state.message = "Account is not activated. Please activate your account.";
-          toast.error("Account is not activated. Please activate your account.");
-        } else { 
+          state.status = action.payload;
+          state.message =
+            "Account is not activated. Please activate your account.";
+          toast.error(
+            "Account is not activated. Please activate your account."
+          );
+        } else {
           state.message = action.payload;
           toast.error(action.payload);
         }
         state.success = false;
         state.user = null; //Clear prevoius user data
       })
-      
+
       //logout user
-      .addCase(logout.pending, (state) => { //Checking for pending state, still no result on API call
+      .addCase(logout.pending, (state) => {
+        //Checking for pending state, still no result on API call
         state.loading = true;
         state.error = null; //clearing previous errors
       })
-      .addCase(logout.fulfilled, (state) => { // API call results return  with successful state  
+      .addCase(logout.fulfilled, (state) => {
+        // API call results return  with successful state
         state.loading = false; // Stop loading when the request succeeds
         state.success = true;
         state.loggedIn = false;
@@ -236,20 +298,23 @@ const userSlice = createSlice({
         state.message = "Logged out successfully"; // Set message
         toast.success("Logged out successfully");
       })
-      .addCase(logout.rejected, (state,action) => { //API calls returned with failed state
-        state.loading = false;// Stop loading when the request fails
+      .addCase(logout.rejected, (state, action) => {
+        //API calls returned with failed state
+        state.loading = false; // Stop loading when the request fails
         state.error = action.payload;
         state.success = false;
         state.message = action.payload;
         toast.error(action.payload);
       })
-    
-          //login status
-      .addCase(getLogInStatus.pending, (state) => { //Checking for pending state, still no result on API call
+
+      //login status
+      .addCase(getLogInStatus.pending, (state) => {
+        //Checking for pending state, still no result on API call
         state.loading = true;
         state.error = null; //clearing previous errors
       })
-      .addCase(getLogInStatus.fulfilled, (state,action) => { // API call results return  with successful state  
+      .addCase(getLogInStatus.fulfilled, (state, action) => {
+        // API call results return  with successful state
         state.loading = false; // Stop loading when the request succeeds
         state.success = true;
         if (action.payload === false) {
@@ -260,111 +325,127 @@ const userSlice = createSlice({
         // state.error = null; // Clear errors
         state.user = action.payload; //set user data
       })
-      .addCase(getLogInStatus.rejected, (state,action) => { //API calls returned with failed state
-        state.loading = false;// Stop loading when the request fails
+      .addCase(getLogInStatus.rejected, (state, action) => {
+        //API calls returned with failed state
+        state.loading = false; // Stop loading when the request fails
         state.error = action.payload;
         state.loggedIn = false;
         state.success = false;
         state.message = action.payload;
       })
-    
-    //get user
-      .addCase(getUser.pending, (state) => { //Checking for pending state, still no result on API call
+
+      //get user
+      .addCase(getUser.pending, (state) => {
+        //Checking for pending state, still no result on API call
         state.loading = true;
         state.error = null; //clearing previous errors
       })
-      .addCase(getUser.fulfilled, (state,action) => { // API call results return  with successful state  
+      .addCase(getUser.fulfilled, (state, action) => {
+        // API call results return  with successful state
         state.loading = false; // Stop loading when the request succeeds
         state.success = true;
         state.user = action.payload;
         state.error = null; // Clear errors
         toast.success(action.payload);
       })
-      .addCase(getUser.rejected, (state,action) => { //API calls returned with failed state
-        state.loading = false;// Stop loading when the request fails
+      .addCase(getUser.rejected, (state, action) => {
+        //API calls returned with failed state
+        state.loading = false; // Stop loading when the request fails
         state.error = true;
         state.message = action.payload;
         toast.error(action.payload);
       })
 
-    //update user
-      .addCase(updateUser.pending, (state) => { //Checking for pending state, still no result on API call
+      //update user
+      .addCase(updateUser.pending, (state) => {
+        //Checking for pending state, still no result on API call
         state.loading = true;
         state.error = null; //clearing previous errors
       })
-      .addCase(updateUser.fulfilled, (state,action) => { // API call results return  with successful state  
+      .addCase(updateUser.fulfilled, (state, action) => {
+        // API call results return  with successful state
         state.loading = false; // Stop loading when the request succeeds
         state.success = true;
         state.login = true;
         state.user = action.payload;
         state.error = null; // Clear errors
-         state.message = "user updated successful"; //Set message
+        state.message = "user updated successful"; //Set message
         toast.success("Updated successful");
       })
-      .addCase(updateUser.rejected, (state,action) => { //API calls returned with failed state
-        state.loading = false;// Stop loading when the request fails
+      .addCase(updateUser.rejected, (state, action) => {
+        //API calls returned with failed state
+        state.loading = false; // Stop loading when the request fails
         state.error = true;
         state.message = action.payload;
         toast.error(action.payload);
       })
-    
-    //update photo
-      .addCase(updatePhoto.pending, (state) => { //Checking for pending state, still no result on API call
+
+      //update photo
+      .addCase(updatePhoto.pending, (state) => {
+        //Checking for pending state, still no result on API call
         state.loading = true;
         state.error = null; //clearing previous errors
       })
-      .addCase(updatePhoto.fulfilled, (state,action) => { // API call results return  with successful state  
+      .addCase(updatePhoto.fulfilled, (state, action) => {
+        // API call results return  with successful state
         state.loading = false; // Stop loading when the request succeeds
         state.success = true;
         state.user = action.payload;
         state.error = null; // Clear errors
-         state.message = "user image updated successful"; //Set message
+        state.message = "user image updated successful"; //Set message
         toast.success("user image Updated successful");
       })
-      .addCase(updatePhoto.rejected, (state,action) => { //API calls returned with failed state
-        state.loading = false;// Stop loading when the request fails
+      .addCase(updatePhoto.rejected, (state, action) => {
+        //API calls returned with failed state
+        state.loading = false; // Stop loading when the request fails
         state.error = true;
         state.message = action.payload;
         toast.error(action.payload);
       })
-    //activate User
-      .addCase(activateAccount.pending, (state) => { //Checking for pending state, still no result on API call
+      //activate User
+      .addCase(activateAccount.pending, (state) => {
+        //Checking for pending state, still no result on API call
         state.loading = true;
         state.error = null; //clearing previous errors
       })
-      .addCase(activateAccount.fulfilled, (state,action) => { // API call results return  with successful state  
+      .addCase(activateAccount.fulfilled, (state, action) => {
+        // API call results return  with successful state
         state.loading = false; // Stop loading when the request succeeds
         state.activated = true;
         state.user = action.payload;
         state.error = null; // Clear errors
         state.message = "Account activated successful"; //Set message
       })
-      .addCase(activateAccount.rejected, (state,action) => { //API calls returned with failed state
-        state.loading = false;// Stop loading when the request fails
+      .addCase(activateAccount.rejected, (state, action) => {
+        //API calls returned with failed state
+        state.loading = false; // Stop loading when the request fails
         state.error = true;
         state.message = action.payload;
         toast.error(action.payload);
       })
-    
-    //activate User
-      .addCase(resetActivationCode.pending, (state) => { //Checking for pending state, still no result on API call
+
+      //activate User
+      .addCase(resetActivationCode.pending, (state) => {
+        //Checking for pending state, still no result on API call
         state.loading = true;
         state.error = null; //clearing previous errors
       })
-      .addCase(resetActivationCode.fulfilled, (state,action) => { // API call results return  with successful state  
+      .addCase(resetActivationCode.fulfilled, (state, action) => {
+        // API call results return  with successful state
         state.loading = false; // Stop loading when the request succeeds
         state.activateToken = true;
         state.user = action.payload;
         state.error = null; // Clear errors
-        toast.success("Activation code has been sent to your email");//Set message
+        toast.success("Activation code has been sent to your email"); //Set message
       })
-      .addCase(resetActivationCode.rejected, (state,action) => { //API calls returned with failed state
-        state.loading = false;// Stop loading when the request fails
+      .addCase(resetActivationCode.rejected, (state, action) => {
+        //API calls returned with failed state
+        state.loading = false; // Stop loading when the request fails
         state.error = true;
         state.message = action.payload;
         toast.error(action.payload);
       })
-    
+
       .addCase(generateOTP.pending, (state) => {
         state.loading = true;
         state.error = null; //clearing previous errors
@@ -374,34 +455,62 @@ const userSlice = createSlice({
         state.error = null; // Clear errors
         toast.success(action.payload);
         state.message = "OTP sent successful"; //Set message
-    })
-      .addCase(generateOTP.rejected, (state,action) => {
-        state.loading = false;// Stop loading when the request fails
+      })
+      .addCase(generateOTP.rejected, (state, action) => {
+        state.loading = false; // Stop loading when the request fails
         state.error = true;
         state.message = action.payload;
         toast.error(action.payload);
       })
-    
-    
-    
-    .addCase(verifyOTP.pending, (state) => {
+
+      .addCase(verifyOTP.pending, (state) => {
         state.loading = true;
         state.error = null; //clearing previous errors
       })
       .addCase(verifyOTP.fulfilled, (state, action) => {
         state.loading = false; // Stop loading when the request succeeds
-        state.loggedIn = true
+        state.loggedIn = true;
         state.showUser = true;
         state.user = action.payload;
         state.error = null; // Clear errors
         state.message = "OTP sent successful"; //Set message
-    })
-      .addCase(verifyOTP.rejected, (state,action) => {
-        state.loading = false;// Stop loading when the request fails
+      })
+      .addCase(verifyOTP.rejected, (state, action) => {
+        state.loading = false; // Stop loading when the request fails
         state.error = true;
         state.message = action.payload;
         toast.error(action.payload);
       })
+
+      .addCase(getCaptcha.pending, (state) => {
+        state.loading = true;
+        state.error = null; //clearing previous errors
+      })
+      .addCase(getCaptcha.fulfilled, (state) => {
+        state.loading = false; // Stop loading when the request succeeds
+        state.error = false; // Clear errors
+      })
+      .addCase(getCaptcha.rejected, (state) => {
+        state.loading = false; // Stop loading when the request fails
+        state.error = true;
+      })
+      .addCase(verifyCaptcha.pending, (state) => {
+        state.loading = true;
+        state.error = null; //clearing previous errors
+      })
+      .addCase(verifyCaptcha.fulfilled, (state, action) => {
+        state.loading = false; // Stop loading when the request succeeds
+        if (action.payload === true) {
+          state.changePassword = true;
+        }
+        state.error = null; // Clear errors
+      })
+      .addCase(verifyCaptcha.rejected, (state, action) => {
+        state.loading = false; // Stop loading when the request fails
+        state.error = true;
+        state.message = action.payload;
+        toast.error(action.payload);
+      });
   }
 });
 

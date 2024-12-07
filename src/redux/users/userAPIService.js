@@ -36,11 +36,16 @@ const login = async (userData) => {
   } catch (error) {
     // Handle different types of errors
     if (error.response) {
-      if (error.response.data.status !== 1) {
+      if (error.response.data.status & (error.response.data.status !== 1)) {
         throw new Error(error.response.data.status);
       } else {
+        console.log('error', error);
         // Server responded with a status other than 2xx, throw a custom error message depending on the status
-        throw new Error(error.response.data.message || error.response.statusText || "Login failed");
+        throw new Error(
+          error.response.data.message ||
+            error.response.statusText ||
+            "Login failed"
+        );
       }
   } else if (error.request) {
       // Request was made but no response was received
@@ -279,7 +284,100 @@ const verifyOTP = async (userData) => {
   }
 }
 
+const getCaptcha = async (userData) => {
+  const API_URL = `${BASE_API_URL}/v1/users/captcha`;
+  try {
+    const response = await axios.post(
+      `${API_URL}?timestamp=${Date.now()}`,userData,{
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+      }
+    );
+    return response.data;
+  } catch (error) {
+    // Handle different types of errors
+    if (error.response) {
+      // Server responded with a status other than 2xx, throw a custom error message depending on the status
+      throw new Error(
+        error.response.data.message ||
+          error.response.statusText ||
+          "failed to reset token"
+      );
+    } else if (error.request) {
+      // Request was made but no response was received
+      throw new Error("No response from server. Please try again later.");
+    } else {
+      // Something else happened during the request
+      throw new Error("An error occurred. Please try again.");
+    }
+  }
+};
 
+
+const verifyCaptcha = async (userData) => {
+  const API_URL = `${BASE_API_URL}/v1/users/verifycaptcha`;
+  try {
+    const response = await axios.post(
+      `${API_URL}?timestamp=${Date.now()}`,userData,
+      {
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+      }
+    );
+    return response.data;
+  } catch (error) {
+    // Handle different types of errors
+    if (error.response) {
+      // Server responded with a status other than 2xx, throw a custom error message depending on the status
+      throw new Error(
+        error.response.data.message ||
+          error.response.statusText ||
+          "failed to verify captacha"
+      );
+    } else if (error.request) {
+      // Request was made but no response was received
+      throw new Error("No response from server. Please try again later.");
+    } else {
+      // Something else happened during the request
+      throw new Error("An error occurred. Please try again.");
+    }
+  }
+};
+
+const changePassword = async (userData) => {
+  const API_URL = `${BASE_API_URL}/v1/users/changepwd`;
+  try {
+    const response = await axios.post(API_URL,userData,
+      {
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+      }
+    );
+    return response.data;
+  } catch (error) {
+    // Handle different types of errors
+    if (error.response) {
+      // Server responded with a status other than 2xx, throw a custom error message depending on the status
+      throw new Error(
+        error.response.data.message ||
+          error.response.statusText ||
+          "failed to change password"
+      );
+    } else if (error.request) {
+      // Request was made but no response was received
+      throw new Error("No response from server. Please try again later.");
+    } else {
+      // Something else happened during the request
+      throw new Error("An error occurred. Please try again.");
+    }
+  }
+};
 
 const userAPIService = {
   register,
@@ -292,6 +390,9 @@ const userAPIService = {
   activateUser,
   resetActivationCode,
   generateOTP,
-  verifyOTP
-}
+  verifyOTP,
+  getCaptcha,
+  verifyCaptcha,
+  changePassword,
+};
 export default userAPIService;

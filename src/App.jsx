@@ -15,8 +15,11 @@ import { getLogInStatus } from './redux/users/userSlice';
 import Profile from './pages/profile/profile';
 import Order from './pages/order/order';
 import ActivatePage from './pages/auth/ActivatePage';
-import ResetActivationPage from './pages/auth/ResetActivationPage ';
+import ResetActivation from './pages/auth/ResetActivation';
 import MFAEmailStepUp from './pages/auth/MFAEmailStepUp ';
+import PasswordReset from './pages/auth/PasswordReset';
+import PasswordChange from './pages/auth/PasswordChange';
+import SetNewPassword from './pages/auth/SetNewPassword';
 
 
 const App = () => {
@@ -39,8 +42,11 @@ const App = () => {
           <Route path='/myorder' element={<Order />} />
           <Route path='/' element={<Home />} />
           <Route path='/activate' element={<ActivatePage />} />
-          <Route path='/resettoken' element={<ResetActivationPage />} />
+          <Route path='/resettoken' element={<ResetActivation />} />
           <Route path='/mfaemailstepup' element={<MFAEmailStepUp />} />
+          <Route path='/passwordreset' element={<PasswordReset />} />
+          <Route path='/changepassword' element={<PasswordChange />} />
+          <Route path='/setpassword' element={<SetNewPassword/>}/>
         </Routes>
         <Footer/>
       </BrowserRouter>

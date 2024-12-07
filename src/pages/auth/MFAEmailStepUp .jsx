@@ -9,7 +9,7 @@ import { generateOTP, verifyOTP } from "../../redux/users/userSlice";
 import { useNavigate } from "react-router-dom";
 import { useEffect } from "react";
 
-const MfaEmailPage = () => {
+const MFAEmailStepUp = () => {
   const navigate = useNavigate();
   const { user,loggedIn,error } = useSelector((state) => state.user); // Replace with dynamic user email
   const dispatch = useDispatch();
@@ -153,4 +153,4 @@ const MfaEmailPage = () => {
   );
 };
 
-export default MfaEmailPage;
+export default MFAEmailStepUp;
